@@ -3,6 +3,8 @@
 import {expect} from 'chai';
 
 let request;
+
+let UserId;
 describe('User', function() {
   before(function* () {
     yield app.started;
@@ -13,8 +15,8 @@ describe('User', function() {
     describe('Given valid parameters', function() {
       it('should create new user', function* () {
         let params = {
-          username: 'zenoan',
-          email: 'roger.madjos@gmail.com'
+          username: 'imZEHH',
+          email: 'zeh@supermail.com'
         };
 
         let result = yield request
@@ -22,6 +24,7 @@ describe('User', function() {
           .send(params)
           .expect(201)
           .expect(res => {
+            UserId = res.body.data._id;
             expect(res.body.data).to.has.property('_id');
           });
 
@@ -30,33 +33,57 @@ describe('User', function() {
         expect(user).to.has.property('email', params.email);
       });
     });
+  });
 
-    describe('Given invalid parameters', function() {
-      it('should return status 400', function* () {
-        let params = {
-          username: 'protozenoan',
-          email: 'not an email'
-        };
-
+  describe('GET /users/id', function() {
+    describe('Given unique _id', function() {
+      it('should fetch specific user base on _id', function* () {
         yield request
-          .post('/users')
-          .send(params)
-          .expect(400)
+          .get('/users/' + UserId)
+          .send()
+          .expect(200)
           .expect(res => {
-            expect(res.body).to.has.property('code', 'INVALID_REQUEST');
+            expect(res.body.username).to.deep.equal('imZEHH');
+            expect(res.body.email).to.deep.equal('zeh@supermail.com');
           });
       });
-      it('should return status 400', function* () {
-        let params = {
-          email: 'roger@highoutput.io'
-        };
+    });
+  });
 
+  describe('GET /users', function() {
+    describe('Fetch all Users from the storage', function() {
+      it('should fetch all users', function* () {
         yield request
-          .post('/users')
-          .send(params)
-          .expect(400)
+          .get('/users')
+          .send()
+          .expect(200);
+      });
+    });
+  });
+
+  describe('DELETE /users/id', function() {
+    describe('Given unique _id', function() {
+      it('should delete specific user base on _id', function* () {
+        yield request
+          .delete('/users/' + UserId)
+          .send()
+          .expect(200)
           .expect(res => {
-            expect(res.body).to.has.property('code', 'INVALID_REQUEST');
+            expect(res.body.message).to.deep.equal('User successfully deleted');
+          });
+      });
+    });
+  });
+
+  describe('GET /users/id', function() {
+    describe('Verify if the user still exist', function() {
+      it('should check the object is equal to {}', function* () {
+        yield request
+          .get('/users/' + UserId)
+          .send()
+          .expect(200)
+          .expect(res => {
+            expect(res.body).to.deep.equal({});
           });
       });
     });
