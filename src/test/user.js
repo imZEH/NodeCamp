@@ -43,6 +43,8 @@ describe('User', function() {
           .send()
           .expect(200)
           .expect(res => {
+            expect(res.body)
+            .to.have.all.keys('_id', 'username', 'email', 'createdAt');
             expect(res.body.username).to.deep.equal('imZEHH');
             expect(res.body.email).to.deep.equal('zeh@supermail.com');
           });
